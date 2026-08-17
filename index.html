@@ -1,0 +1,108 @@
+fillStyle = '#00f2fe';
+      snake.forEach(part => snakeCtx.fillRect(part.x, part.y, 18, 18));
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowUp' && snakeDy === 0) { snakeDx = 0; snakeDy = -20; }
+      if (e.key === 'ArrowDown' && snakeDy === 0) { snakeDx = 0; snakeDy = 20; }
+      if (e.key === 'ArrowLeft' && snakeDx === 0) { snakeDx = -20; snakeDy = 0; }
+      if (e.key === 'ArrowRight' && snakeDx === 0) { snakeDx = 20; snakeDy = 0; }
+    });
+
+    /* === 2. КРЕСТИКИ-НОЛИКИ === */
+    let boardState = ['', '', '', '', '', '', '', '', ''];
+    let currentPlayer = 'X';
+    let isGameActive = true;
+
+    function makeMove(index) {
+      if (boardState[index] === '' && isGameActive) {
+        boardState[index] = currentPlayer;
+        document.querySelectorAll('.tic-cell')[index].innerText = currentPlayer;
+        checkTicWinner();
+      }
+    }
+
+    function checkTicWinner() {
+      const wins = [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
+      let won = wins.some(w => boardState[w[0]] && boardState[w[0]] === boardState[w[1]] && boardState[w[0]] === boardState[w[2]]);
+
+      if (won) {
+        document.getElementById('tic-status').innerText = Игрок ${currentPlayer} победил! 🎉;
+        isGameActive = false;
+      } else if (!boardState.includes('')) {
+        document.getElementById('tic-status').innerText = 'Ничья! 🤝';
+        isGameActive = false;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        document.getElementById('tic-status').innerText = Ход игрока: ${currentPlayer};
+      }
+    }
+
+    function resetTicTacToe() {
+      boardState = ['', '', '', '', '', '', '', '', ''];
+      currentPlayer = 'X';
+      isGameActive = true;
+      document.getElementById('tic-status').innerText = 'Ход игрока: X';
+      document.querySelectorAll('.tic-cell').forEach(c => c.innerText = '');
+    }
+
+    /* === 3. ГОНКИ (УВОРАЧИВАЙСЯ ОТ МАШИН) === */
+    const carCanvas = document.getElementById('carCanvas');
+    const carCtx = carCanvas.getContext('2d');
+    let playerX, obstacles, carScore, carInterval;
+
+    function initCarGame() {
+      clearInterval(carInterval);
+      playerX = 130;
+      obstacles = [];
+      carScore = 0;
+      document.getElementById('car-score').innerText = carScore;
+      carInterval = setInterval(updateCarGame, 20);
+    }
+
+    function updateCarGame() {
+      carCtx.fillStyle = '#222';
+      carCtx.fillRect(0, 0, carCanvas.width, carCanvas.height);
+
+      // Отрисовка игрока (зеленая машина)
+      carCtx.fillStyle = '#00ff66';
+      carCtx.fillRect(playerX, 330, 40, 60);
+
+      // Создание препятствий
+      if (Math.random() < 0.03) {
+        obstacles.push({x: Math.random() * 260, y: -60});
+      }
+
+      // Движение препятствий
+      for (let i = 0; i < obstacles.length; i++) {
+        obstacles[i].y += 5;
+        carCtx.fillStyle = '#ff3333';
+        carCtx.fillRect(obstacles[i].x, obstacles[i].y, 40, 60);
+
+        // Столкновение
+        if (playerX < obstacles[i].x + 40 && playerX + 40 > obstacles[i].x &&
+            330 < obstacles[i].y + 60 && 390 > obstacles[i].y) {
+          clearInterval(carInterval);
+          alert('Авария! Ваш счёт: ' + carScore);
+          return;
+        }
+
+        // Зачисление очков
+        if (obstacles[i].y > 400) {
+          obstacles.splice(i, 1);
+          carScore += 1;
+          document.getElementById('car-score').innerText = carScore;
+        }
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft' && playerX > 0) playerX -= 20;
+      if (e.key === 'ArrowRight' && playerX < 260) playerX += 20;
+    });
+
+    // Старт первой игры при загрузке
+    initSnake();
+  </script>
+</body>
+</html>
